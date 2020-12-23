@@ -1,69 +1,94 @@
 import json
-from PIL import Image 
+from PIL import Image
+from urllib.request import urlopen
 import requests
 import time
 from colorama import Fore, Back, Style 
-foundcard = ""
+foundcards = ""
 #https://github.com/public-apis/public-apis/blob/master/README.md
 
-site = 'https://db.ygoprodeck.com/api/v5/cardinfo.php'
+
+with open("url.txt") as file:
+  site = file.readline()
+
 #this will be modified with the text
 r = requests.get(site)
 text = r.text
-card = json.loads(text)
-# a list of all the names of the cards
+cards = json.loads(text)
+cards = cards["data"]
+# a list of all the names of the cardss
 
-cardnames = []
-cards1 = []
-allmonsters = []
-allspells = []
-alltraps = []
+all_monsters = []
+all_spells = []
+all_traps = []
+all_cards = []
+print(cards[0])
 
-for i in range(len(card)):
-  cardnames += ([card[i]["name"]])
-  if (card[i]["type"] == 'Spell Card'):
-    minidict = [{"id": card[i]["id"],
-   "name": card[i]["name"], "type": card[i]["type"], "desc": card[i]["desc"], "race": card[i]["race"],}]
-    allspells += minidict
+class card():
+  #__init__() is called when you create an Object class
+  def __init__(self, id, name, card_type, desc, race, archetype, image_url, small_image_url):
+    #stores argument in self
+    self.id = id
+    self.name = name
+    self.card_type = card_type
+    self.desc = desc
+    self.race = race
+    self.archetype = archetype
+    self.image = image_url
+    self.small_image = small_image_url
+      
+  def display_image(self):
+    img = Image.open(urlopen(self.image))
+    img.show()
   
-  elif (card[i]["type"] == 'Trap Card'):
-    minidict = [{"id": card[i]["id"],
-   "name": card[i]["name"], "type": card[i]["type"], "desc": card[i]["desc"], "race": card[i]["race"],}]
-    alltraps += minidict
+  def display_small_image(self):
+    img = Image.open(urlopen(self.small_image))
+    img.show()
 
-  elif (card[i]["type"] == 'Normal Monster') or (card[i]["type"] == 'Effect Monster') or (card[i]["type"] == 'Ritual Monster') or (card[i]["type"] == 'Fusion Monster') or (card[i]["type"] == 'Xyz Monster') or (card[i]["type"] == 'Synchro Monster') or (card[i]["type"] == 'Link Monster') or (card[i]["type"] == 'Pendulum Monster') or (card[i]["type"] == 'Monster Token'):
-    if (card[i]["type"] == 'Link Monster'):
-      minidict = [{"id": card[i]["id"], "name": card[i]["name"], "type": card[i]["type"], "desc": card[i]["desc"],  "linkval": card[i]["linkval"], "linkmarkers": card[i]["linkmarkers"], "race": card[i]["race"], "attribute": card[i]["attribute"], "atk": card[i]["atk"]}]
-    elif (card[i]["type"] == 'Pendulum Monster'):
-      [{"id": card[i]["id"], "name": card[i]["name"], "type": card[i]["type"], "desc": card[i]["desc"],  "linkvalm": card[i]["linkval "], "linkmarkers ": card[i]["linkmarkers "], "race": card[i]["race"], "attribute": card[i]["attribute"], "scale": card[i]["scale"], "atk": card[i]["atk"], "def": card[i]["def"]}]
+  def display_card_card_type_with_color(self):
+    if self.card_type == "Spell Card":
+      print(Fore.GREEN + Back.RESET + self.name + Fore.RESET)
+    elif self.card_type == "Trap Card":
+      print(Fore.MAGENTA + Back.RESET + self.name + Fore.RESET)
+    elif self.card_type == "Synchro Monster":
+      print(Fore.WHITE + Back.RESET + self.name + Fore.RESET)
+    elif self.card_type == "Link Monster":
+      print(Fore.BLUE + Back.RESET + self.name + Fore.RESET)
+    elif self.card_type == "Fusion Monster":
+      print(Fore.MAGENTA + Back.RESET + self.name + Fore.RESET)
+    elif self.card_type == "Xyz Monster":
+      print(Fore.BLACK + Back.RESET + self.name + Fore.RESET)
+    elif self.card_type == "Ritual Monster":
+      print(Fore.BLUE + Back.RESET + self.name + Fore.RESET)
+    elif self.card_type == "Pendulum Effect Monster" or self.card_type == "Pendulum Normal Monster":
+      print(Fore.CYAN + Back.RESET + self.name + Fore.RESET)
+    elif self.card_type == "Effect Monster":
+      print(Fore.RED + Back.RESET + self.name + Fore.RESET)
+    elif self.card_type == "Normal Monster":
+      print(Fore.YELLOW + Back.RESET + self.name + Fore.RESET)
     else:
-      minidict = [{"id": card[i]["id"], "name": card[i]["name"], "type": card[i]["type"], "desc": card[i]["desc"],  "def": card[i]["def"], "atk": card[i]["atk"], "level": card[i]["level"], "race": card[i]["race"], "attribute": card[i]["attribute"]}]
-    allmonsters += minidict
-  cards1.append(minidict)
+      print(Fore.RED + Back.RESET + self.name + Fore.RESET)
 
-  if minidict[0]["type"] == "Spell Card":
-    print(Fore.GREEN + Back.RESET + str([card[i]["name"]]))
-  elif minidict[0]["type"] == "Trap Card":
-    print(Fore.MAGENTA + Back.RESET + str([card[i]["name"]]))
-  elif minidict[0]["type"] == "Synchro Monster":
-    print(Fore.WHITE + Back.RESET + str([card[i]["name"]]))
-  elif minidict[0]["type"] == "Link Monster":
-    print(Fore.CYAN + Back.RESET + str([card[i]["name"]]))
-  elif minidict[0]["type"] == "Fusion Monster":
-    print(Fore.MAGENTA + Back.RESET + str([card[i]["name"]]))
-  elif minidict[0]["type"] == 'Xyz Monster':
-    print(Fore.BLACK + Back.WHITE + str([card[i]["name"]]))
-  elif minidict[0]["type"] == 'Ritual Monster':
-    print(Fore.BLUE + Back.RESET + str([card[i]["name"]]))
-  elif minidict[0]["type"] == 'Pendulum Effect Monster' or minidict[0]["type"] == 'Pendulum Normal Monster':
-    print(Fore.CYAN + Back.RESET + str([card[i]["name"]]))
-  elif minidict[0]["type"] == 'Effect Monster':
-    print(Fore.RED + Back.RESET + str([card[i]["name"]]))
-  elif minidict[0]["type"] == 'Normal Monster':
-    print(Fore.YELLOW + Back.RESET + str([card[i]["name"]]))
-  else:
-    print(Fore.RED + Back.RESET + str([card[i]["name"]]))
-  time.sleep(0.002)
+for i in range(len(cards)):
+  current_card = card(cards[i]["id"], cards[i]["name"], cards[i]["type"], cards[i]["desc"], cards[i]["race"], "archetype", cards[i]["card_images"][0]["image_url"], cards[i]["card_images"][0]["image_url_small"])
+  try:
+    current_card.archetype = cards[i]["archetype"]
+  except KeyError:
+    current_card.archetype = "No archetype"
 
-def sortmonster(spellcardlist):
-  pass
+  if current_card.card_type == 'Spell Card':
+    all_spells.append(current_card)
+    all_cards.append(current_card)
+  
+  elif current_card.card_type == 'Trap Card':
+    all_traps.append(current_card)
+    all_cards.append(current_card)
+  
+  elif current_card.card_type.find('Monster') != -1:
+    all_monsters.append(current_card)
+    all_cards.append(current_card)
+  
+  current_card.display_card_card_type_with_color()
+  
+all_monsters[0].display_image()
+
